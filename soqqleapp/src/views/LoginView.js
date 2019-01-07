@@ -9,7 +9,7 @@ import {LINKEDIN_LOGIN_APP_ID, LINKEDIN_LOGIN_APP_SECRET, LINKEDIN_LOGIN_CALLBAC
 import {isValidEmail} from "../utils/common";
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-import * as constants from '../utils/Constants';
+import * as constants from '../constants';
 
 const baseApi = 'https://api.linkedin.com/v1/people/';
 var RCTNetworking = require('RCTNetworking');
@@ -212,7 +212,6 @@ export default class LoginView extends Component {
           </TouchableOpacity>
               
            
-
           <View style={{height: 50, marginTop: 20, flexDirection: 'row'}}>
             <CheckBox style={styles.checkbox} checked={isAgree} onPress={() => this.setState({isAgree: !isAgree})}/>
             <View style={{marginLeft: 20, flexDirection: 'row', flexWrap: 'wrap'}}><Text style={styles.text}>I agree to the </Text><TouchableOpacity onPress={() => this.openLink(PRIVACY_LINK)}><Text style={styles.inputLabel}>Privacy Policy</Text></TouchableOpacity><Text style={styles.text}> and </Text><TouchableOpacity onPress={() => this.openLink(TERM_OF_USE_LINK)}><Text style={styles.inputLabel}>Terms and Conditions.</Text></TouchableOpacity></View>

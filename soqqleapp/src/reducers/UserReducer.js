@@ -5,7 +5,7 @@ import { USER_TASK_GROUP_LIST_PATH_API } from './../endpoints';
 import { Effects, loop } from 'redux-loop-symbol-ponyfill';
 import * as AppStateActions from './AppReducer';
 import store from '../redux/store';
-import * as constants from '../utils/Constants';
+import * as constants from '../constants';
 import { constant } from 'redux-loop-symbol-ponyfill/lib/effects';
 
 const REGISTER_REQUESTED = 'UserState/REGISTER_REQUESTED';
@@ -141,7 +141,7 @@ export async function saveProfile(data) {
 export async function forgotPassword(data){
   console.log( 'in api calling methd ', data);
  // let arrayParam =  {'email':'demo2@demo.com','password':'1234'};
- 
+
   let arrayParam =  {'email':data.email,'password':data.newPassword};
 
   try {
@@ -163,6 +163,7 @@ export async function forgotPassword(data){
 }
 
 export async function login(data) {
+ 
   try {
     store.dispatch(AppStateActions.startLoading());
     const response = await instance.post('/auth/sign-in', data);
@@ -386,7 +387,6 @@ export default function UserStateReducer(state = initialState, action = {}) {
        case FORGOT_PASSWORD_COMPLETED:
           console.log("****** forgot pwd payload ",action.payload,"******");
         return state.set('user', action.payload).set('forgotpasswordSuccess', true);
-
 
       case FORGOT_PASSWORD_FAILED:
          return state.set('forgotpasswordSuccess', false);
