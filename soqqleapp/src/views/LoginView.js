@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Image, ImageBackground, Keyboard, Platform, StatusBar, TouchableOpacity, View, StyleSheet, Linking} from 'react-native';
+import {Image, ImageBackground, Keyboard, Platform, StatusBar, TouchableOpacity, View, StyleSheet, Linking,Modal} from 'react-native';
 import {GraphRequest, GraphRequestManager, LoginManager} from 'react-native-fbsdk';
 import {CheckBox, Form, Input, Item, Label, Text, Thumbnail} from 'native-base';
 import LinkedInModal from 'react-native-linkedin';
@@ -7,6 +7,9 @@ import {showMessage} from 'react-native-flash-message';
 import {MAIN_COLOR} from "../constants";
 import {LINKEDIN_LOGIN_APP_ID, LINKEDIN_LOGIN_APP_SECRET, LINKEDIN_LOGIN_CALLBACK} from "../config";
 import {isValidEmail} from "../utils/common";
+import Icon from 'react-native-vector-icons/FontAwesome';
+
+import * as constants from '../utils/Constants';
 
 const baseApi = 'https://api.linkedin.com/v1/people/';
 var RCTNetworking = require('RCTNetworking');
@@ -83,6 +86,7 @@ export default class LoginView extends Component {
     try {
       this.setState({showLoadingModal: true});
       LoginManager.setLoginBehavior('native');
+      
       result = await LoginManager.logInWithReadPermissions(['public_profile', 'user_friends', 'email']);
       processResult(result)
     } catch (nativeError) {
@@ -91,7 +95,7 @@ export default class LoginView extends Component {
         result = await LoginManager.logInWithReadPermissions(['public_profile', 'user_friends', 'email']);
         processResult(result)
       } catch (webError) {
-        //console.log("web===error====", webError)
+        console.log("web===error====", webError)
         LoginView.flashMessage('Can not login with your Facebook, please try again!')
       }
     }
@@ -112,9 +116,43 @@ export default class LoginView extends Component {
     userActions.loginRequest(this.state);
   };
 
+  showforgotPasswordView = () =>{
+    
+   this.setState({modalVisible:true});
+  }
+  
+  forgotPassword(){
+    Keyboard.dismiss();
+    const {userActions} = this.props;
+    const {email, newPassword} = this.state;
+    if (!email) {
+      return LoginView.flashMessage(constants.KEMAIL_VALIDATION_ALERT);
+    }else if (!isValidEmail(email)) {
+      return LoginView.flashMessage(constants.KEMAIL_VALIDATION_ALERT);
+    }else if(!newPassword){
+      return LoginView.flashMessage(constants.KPASSWORD_VALIDATION_ALERT);
+    }else
+    {
+      console.log(' requested param ', this.state);
+      userActions.forgotpasswordRequested(this.state);
+    }
+   
+  }
+  setModalVisible(visible) {
+    this.setState({ modalVisible: visible });
+    
+  }
+
   constructor(props) {
     super(props);
-    this.state = {email: '', password: '', isAgree: false};
+    this.state = {
+      email: '', 
+      password: '', 
+      newPassword: '',
+      isAgree: false,
+      modalVisible: false,
+      processing: false,
+    };
   }
 
   componentWillReceiveProps(nextProps) {
@@ -129,10 +167,15 @@ export default class LoginView extends Component {
       LoginView.flashMessage('Login successful');
       this.props.navigation.navigate({routeName: 'Story'});
     }
+    if (nextProps.forgotpasswordSuccess && nextProps.forgotpasswordSuccess !== this.props.forgotpasswordSuccess) {
+     console.log( 'in forgot pwd success ');
+      LoginView.flashMessage(constants.KFORGOT_PWD_SUCCESS_ALERT);
+      this.setState({modalVisible:false});
+    }
   }
 
   render() {
-    const {email, password, name, isAgree} = this.state;
+    const {email, password, name, isAgree, newPassword, modalVisible} = this.state;
     return (
       <View
         style={styles.container}
@@ -164,6 +207,12 @@ export default class LoginView extends Component {
               onChangeText={password => this.setState({password})}
             />
           </Item>
+          <TouchableOpacity style={styles.btnForgotPwd} onPress={this.showforgotPasswordView}>
+            <Text style={styles.textForgotpassword}>Forgot password?</Text>
+          </TouchableOpacity>
+              
+           
+
           <View style={{height: 50, marginTop: 20, flexDirection: 'row'}}>
             <CheckBox style={styles.checkbox} checked={isAgree} onPress={() => this.setState({isAgree: !isAgree})}/>
             <View style={{marginLeft: 20, flexDirection: 'row', flexWrap: 'wrap'}}><Text style={styles.text}>I agree to the </Text><TouchableOpacity onPress={() => this.openLink(PRIVACY_LINK)}><Text style={styles.inputLabel}>Privacy Policy</Text></TouchableOpacity><Text style={styles.text}> and </Text><TouchableOpacity onPress={() => this.openLink(TERM_OF_USE_LINK)}><Text style={styles.inputLabel}>Terms and Conditions.</Text></TouchableOpacity></View>
@@ -214,7 +263,42 @@ export default class LoginView extends Component {
               }}
             />
           </View>
+          
+            
         </Form>
+        {modalVisible? <View style={styles.viewModal}>
+                <View style={styles.likeModalView}>
+                  <View style={styles.likeModalInnerView}>                    
+                            <View>
+                            <Item floatingLabel style={styles.itemPwd}>
+                                <Label style={styles.inputLabel}>New Password</Label>
+                                <Input
+                                  style={styles.textInputPwd}
+                                  secureTextEntry
+                                  value={this.state.newPassword}
+                                  onChangeText={newPassword => this.setState({newPassword})}
+                                />
+                              </Item>
+                            <TouchableOpacity 
+                                style={{marginTop:10}}
+                                onPress={() => this.forgotPassword()}>
+                                <Text style={styles.likeModalAction}> Forgot Password</Text>
+                              </TouchableOpacity>
+
+                            </View>                    
+                    <TouchableOpacity
+                      onPress={() => {
+                        this.setModalVisible(!this.state.modalVisible);
+                      }}
+                      style={styles.likeModalClose}
+                    >
+                      <View>
+                        <Icon name='close' style={styles.likeModalCloseIcon} />
+                      </View>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>:<View />}
       </View>
     );
   }
@@ -249,6 +333,17 @@ const styles = StyleSheet.create({
   text: {
     color: 'rgba(255, 255, 255, 0.3)'
   },
+  btnForgotPwd:{
+  right:0,
+  //backgroundColor:'red',
+
+  alignSelf: 'flex-end',
+  marginTop:5,
+  },
+  textForgotpassword:{
+    color: 'rgba(255, 255, 255, 0.3)',
+    
+  },
   margin10: {
     marginTop: 20,
   },
@@ -269,5 +364,79 @@ const styles = StyleSheet.create({
   },
   textInput: {
     color: "white"
-  }
+  },
+  textInputPwd: {
+    color: "black",
+
+  },
+
+  likeModalView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  },
+  likeModalInnerView: {
+    backgroundColor: 'rgba(255, 255, 255, 1)',
+    paddingVertical: 25,
+    paddingHorizontal: 10,
+    width: '90%',
+    borderRadius: 5,
+  },
+  itemPwd:{
+   marginTop:-15,
+   marginBottom:10,
+  },
+  likeModalTitle: {
+    fontSize: 20,
+    color: '#000000',
+    marginBottom: 10,
+    textAlign: 'center',
+    fontWeight: 'bold'
+  },
+  likeModalText: {
+    fontSize: 18,
+    color: '#000000',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  likeModalSeparator: {
+    fontSize: 17,
+    color: 'rgba(0, 0, 0, 0.6)',
+    paddingVertical: 10,
+    textAlign: 'center',
+  },
+  likeModalClose: {
+    position: 'absolute',
+    padding: 10,
+    right: 5,
+    top: 0
+  },
+  likeModalCloseIcon: {
+    color: '#333333',
+    fontSize: 20,
+  },
+  likeModalAction: {
+    backgroundColor: '#2C2649',
+    color: '#ffffff',
+    fontSize: 17,
+    paddingTop: 5,
+    paddingBottom: 8,
+    paddingHorizontal: 25,
+    borderRadius: 25,
+    alignSelf: 'center'
+
+  },
+  viewModal:{
+   backgroundColor:'rgba(52, 52, 52, 0.001)',
+   top:0,
+   bottom:0,
+  left:10,
+  right: 10,
+  width:'100%',
+  height:'100%',
+  position:'absolute',
+  alignSelf:'center'
+  },
 });

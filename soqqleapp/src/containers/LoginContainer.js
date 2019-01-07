@@ -10,6 +10,8 @@ export default connect(
     isReady: state.getIn(['session', 'isReady']),
     user: isImmutable(state.getIn(['user', 'user']))?state.getIn(['user', 'user']).toJS():state.getIn(['user', 'user']),
     loginSuccess: state.getIn(['user', 'loginSuccess']),
+    forgotpasswordSuccess: state.getIn(['user', 'forgotpasswordSuccess']),
+
     error: state.getIn(['user', 'error'])
   }),
   dispatch => {

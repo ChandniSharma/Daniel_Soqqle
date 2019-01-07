@@ -5,6 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+// Bundle id is === com.Soqqle.SoqqleApp
+
 #import <UIKit/UIKit.h>
 
 @interface AppDelegate : UIResponder <UIApplicationDelegate>
