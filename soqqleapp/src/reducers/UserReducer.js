@@ -95,7 +95,7 @@ export function forgotpasswordCompleted(data){
 export function forgotpasswordFailed(error){
   return {
     type: FORGOT_PASSWORD_FAILED,
-    payload: data
+    payload: error
   }
 }
 
@@ -147,19 +147,22 @@ export async function forgotPassword(data){
   try {
     store.dispatch(AppStateActions.startLoading());
     const response = await instance.post('/auth/forget-password', arrayParam);
-    console.log("response=>", response)
+    console.log("response=>", response.data)
     store.dispatch(AppStateActions.stopLoading());
+    //console.log('For error ping ',response.data.error)
+  
     return forgotpasswordCompleted(response.data);
   } catch (error) {
     console.log("error=>", error.response)
     store.dispatch(AppStateActions.stopLoading());
+    console.log('error response data ',error.response.data );
+   
     if (error.response && error.response.data) {
-      return forgotpasswordFailed({ code: error.response.status, message: "Login failed ! Please check your email and password" });
+      return forgotpasswordFailed({ code: error.response.status, message: "Forgot password failed! Please check your email." });
     }
     return forgotpasswordFailed({ code: 500, message: 'Unexpected error!' });
   }
    
-  
 }
 
 export async function login(data) {
@@ -169,7 +172,7 @@ export async function login(data) {
     const response = await instance.post('/auth/sign-in', data);
 
     console.log("response=>", response)
-
+    store.dispatch(AppStateActions.stopLoading());
     store.dispatch(AppStateActions.loginSuccess(response.data));
     return loginCompleted(response.data);
   } catch (error) {
@@ -385,11 +388,12 @@ export default function UserStateReducer(state = initialState, action = {}) {
         Effects.promise(forgotPassword, action.payload)
        );
        case FORGOT_PASSWORD_COMPLETED:
-          console.log("****** forgot pwd payload ",action.payload,"******");
+          //console.log("****** forgot pwd payload ",action.payload,"******");
         return state.set('user', action.payload).set('forgotpasswordSuccess', true);
 
       case FORGOT_PASSWORD_FAILED:
-         return state.set('forgotpasswordSuccess', false);
+      console.log("****** forgot pwd payload ",action.payload,"******");
+          return state.set('error', action.payload).set('forgotpasswordSuccess', false);
 
     case GET_COMPANIES_REQUESTED:
       return loop(

@@ -118,7 +118,9 @@ export default class LoginView extends Component {
 
   showforgotPasswordView = () =>{
     
-   this.setState({modalVisible:true});
+   this.setState({modalVisible:true,
+    newPassword:''
+  });
   }
   
   forgotPassword(){
@@ -130,13 +132,11 @@ export default class LoginView extends Component {
     }else if (!isValidEmail(email)) {
       return LoginView.flashMessage(constants.KEMAIL_VALIDATION_ALERT);
     }else if(!newPassword){
-      return LoginView.flashMessage(constants.KPASSWORD_VALIDATION_ALERT);
-    }else
-    {
+      return LoginView.flashMessage(constants.KPASSWORD_EMPTY_ALERT);
+    }else{
       console.log(' requested param ', this.state);
       userActions.forgotpasswordRequested(this.state);
     }
-   
   }
   setModalVisible(visible) {
     this.setState({ modalVisible: visible });
@@ -170,7 +170,13 @@ export default class LoginView extends Component {
     if (nextProps.forgotpasswordSuccess && nextProps.forgotpasswordSuccess !== this.props.forgotpasswordSuccess) {
      console.log( 'in forgot pwd success ');
       LoginView.flashMessage(constants.KFORGOT_PWD_SUCCESS_ALERT);
-      this.setState({modalVisible:false});
+      this.setState({
+        modalVisible:false,
+      });
+    }else{
+      this.setState({
+        modalVisible:false,
+      });
     }
   }
 
