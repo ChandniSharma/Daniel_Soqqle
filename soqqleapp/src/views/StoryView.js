@@ -1,32 +1,30 @@
 import React, { Component } from 'react';
 import {
-  ActivityIndicator,
   Dimensions,
+  ActivityIndicator,
   Image,
   Modal,
-  Platform,
   SafeAreaView,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View
 } from 'react-native';
-import Video from 'react-native-video';
+ import Video from 'react-native-video';
 import * as axios from 'axios';
-import { heightPercentageToDP as hp, widthPercentageToDP as wp } from 'react-native-responsive-screen';
+import { widthPercentageToDP as wp } from 'react-native-responsive-screen';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Carousel from 'react-native-snap-carousel';
-import { STORY_IMAGE_BASE_URL, STORY_VIDEO_BASE_URL } from './../constants';
+import { STORY_IMAGE_BASE_URL, STORY_VIDEO_BASE_URL, CHALLENGE_IMAGE_BASE_URL, TASK_GROUP_TYPES } from './../constants';
 import { API_BASE_URL } from './../config';
 import {
   SAVE_USER_TASK_GROUP_API, STORIES_LIST_API, STORY_HAS_VIDEO_API, USER_TASK_GROUP_LIST_PATH_API,
-  TEAM_UPDATE_API
+  TEAM_UPDATE_API, STORY_CHALLENGES_LIST_API_PATH, USER_ACHIEVEMENT_LIST_PATH_API
 } from './../endpoints';
 import CustomText from './../components/CustomText';
+import { getGroupUserDetails } from "../utils/common";
+import styles from './../stylesheets/storyViewStyles';
 
-const statusBarHeight = Platform.OS === 'ios' ? 0 : 0;
-var width = Dimensions.get('window').width; //full width
-var height = Dimensions.get('window').height; //full height
+const width = Dimensions.get('window').width; //full width
 
 const instance = axios.create({
   baseURL: API_BASE_URL,
@@ -34,212 +32,50 @@ const instance = axios.create({
   headers: { 'Content-type': 'application/json' }
 });
 
-const styles = StyleSheet.create({
-  container: {
-    padding: 0,
-    paddingTop: statusBarHeight,
-    backgroundColor: '#10123b',
-    flex: 1
-  },
-  header: {
-    height: hp('8%'),
-    paddingHorizontal: wp('4%'),
-    backgroundColor: '#800094',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    width: width,
-  },
-  headerIcon: {
-    width: wp('8%'),
-    height: hp('4%'),
-  },
-  storyContainerView: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: hp('4%'),
-    height: hp('82%'),
-  },
-  storyContainer: {
-    backgroundColor: '#171a54',
-    width: wp('90%'),
-  },
-  storyItemImage: {
-    alignSelf: 'center',
-    width: '100%',
-    height: hp('35%'),
-  },
-  storyItemVideo: {
-    alignSelf: 'center',
-    width: '100%',
-    height: hp('35%'),
-  },
-  storyContent: {
-    paddingHorizontal: wp('5%'),
-    paddingVertical: hp('2.5%'),
-  },
-  storyItemText: {
-    color: '#fff',
-    textAlign: 'center',
-    fontSize: wp('4.6%'),
-    minHeight: 80,
-  },
-  storyTagContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-around',
-    paddingTop: hp('2.5%'),
-  },
-  storyTag: {
-    backgroundColor: '#111e4a',
-    color: '#ffc500',
-    padding: wp('2%'),
-    fontSize: wp('3.5%'),
-    marginBottom: hp('1%'),
-    fontWeight: '700'
-  },
-  storyActionsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    marginTop: hp('3%'),
-  },
-  storyActionBlock: {
-    borderRadius: 30,
-    borderWidth: 1,
-    borderStyle: 'solid',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    marginHorizontal: 10,
-  },
-  storyActionIcon: {
-    width: wp('8%'),
-    height: hp('4%'),
-  },
-  footer: {
-    backgroundColor: '#800094',
-    height: hp('10%'),
-    width: width,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-  },
-  footerTab: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  footerTabIcon: {
-    width: wp('6%'),
-    height: hp('3%'),
-  },
-  footerTabText: {
-    color: '#fff',
-    paddingTop: hp('1%'),
-    fontSize: wp('3.5%'),
-    fontWeight: '700',
-  },
-  likeModalView: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexDirection: 'row',
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-  },
-  likeModalInnerView: {
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    paddingVertical: 25,
-    paddingHorizontal: 10,
-    width: '90%',
-    borderRadius: 5,
-  },
-  likeModalTitle: {
-    fontSize: 20,
-    color: '#000000',
-    marginBottom: 10,
-    textAlign: 'center',
-    fontWeight: 'bold'
-  },
-  likeModalText: {
-    fontSize: 18,
-    color: '#000000',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  likeModalSeparator: {
-    fontSize: 17,
-    color: 'rgba(0, 0, 0, 0.6)',
-    paddingVertical: 10,
-    textAlign: 'center',
-  },
-  likeModalAction: {
-    backgroundColor: '#2C2649',
-    color: '#ffffff',
-    fontSize: 17,
-    paddingTop: 5,
-    paddingBottom: 8,
-    paddingHorizontal: 25,
-    borderRadius: 25,
-    alignSelf: 'center'
-
-  },
-  likeModalClose: {
-    position: 'absolute',
-    padding: 10,
-    right: 5,
-    top: 0
-  },
-  likeModalCloseIcon: {
-    color: '#333333',
-    fontSize: 20,
-  },
-  taskItem: {
-    backgroundColor: '#2C2649',
-    padding: 10,
-    borderRadius: 5,
-    marginVertical: 6,
-  },
-  taskItemHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 4,
-  },
-  taskItemName: {
-    fontSize: 15,
-    letterSpacing: 1,
-    color: '#ffffff',
-    width: '90%'
-  },
-  taskItemSize: {
-    color: '#1FBEB8',
-    fontSize: 16,
-  },
-  taskItemFooter: {
-    marginTop: 3,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  taskItemExpiry: {
-    color: 'rgba(255, 255, 255, 0.5)',
-    fontSize: 14,
-  },
-  taskItemXP: {
-    color: '#9600A1',
-    fontSize: 18,
-  },
-});
-
 let selectedItemId = null;
+let selectedItemType = null;
 
 export default class StoryView extends Component {
 
+  constructor(props) {
+    super(props);
+    this.state = {
+      storiesFetching: true,
+      challengesFetching: true,
+      stories: [],
+      challenges: [],
+      currentSlideIndex: 0,
+      modalVisible: false,
+      processing: false,
+      tasksFetching: false,
+      userTaskGroups: []
+    };
+  }
+
+  componentWillMount() {
+    this.getStories();
+    if (this.props.user) {
+      this.getUserAchievements();
+    }
+  }
+
+  goToDashboardScreen = () => {
+    this.props.navigation.navigate({ routeName: 'Dashboard' })
+  }
+
+  goToProfileScreen = () => {
+    this.props.navigation.navigate({ routeName: 'Profile' })
+  }
+
+  goToUserTasksScreen = () => {
+    this.props.navigation.navigate({ routeName: 'UserTaskGroup' })
+  }
+
   _renderItem = ({ item, index }) => {
+    const imageBaseUrl = item.item_type === TASK_GROUP_TYPES.CHALLENGE ? CHALLENGE_IMAGE_BASE_URL : STORY_IMAGE_BASE_URL;
     return (
       <View>
-        <View style={styles.storyContainer}>
+        <View style={item.item_type === TASK_GROUP_TYPES.CHALLENGE ? styles.challengeContainer : styles.storyContainer}>
           {item.has_video && this.state.currentSlideIndex === index ? (
             <Video
               ref={(ref) => {
@@ -254,44 +90,70 @@ export default class StoryView extends Component {
             />
           ) : (
               <Image
-                source={{ uri: STORY_IMAGE_BASE_URL.replace('{}', item._id) }}
+                source={{ uri: imageBaseUrl.replace('{}', item._id) }}
                 style={styles.storyItemImage}
                 resizeMode='cover'
               />
             )}
-          <View style={styles.storyContent}>
-            <CustomText loading={this.state.loading}
-              styles={styles.storyItemText}
-              numberOfLines={3}
-              font='open-sans'>
-              {item.description}
-            </CustomText>
-            <View style={styles.storyTagContainer}>
-              {item._objective ? (
-                <CustomText loading={this.state.loading}
-                  styles={styles.storyTag}
-                  font='open-sans'>
-                  {`${item._objective.value} ${item._objective.name.toUpperCase()}`}
-                </CustomText>
-              ) : null}
-              <CustomText loading={this.state.loading}
-                styles={styles.storyTag}
-                font='open-sans'>
-                {`0/${item.quota || 0} ${item.refresh.toUpperCase()}`}
-              </CustomText>
-              {item.reward ? (
-                <CustomText loading={this.state.loading}
-                  styles={{ ...styles.storyTag, ...{ 'marginRight': 0 } }}
-                  font='open-sans'>
-                  {`${item.reward.value} ${item.reward.type.toUpperCase()}`}
-                </CustomText>
-              ) : null}
+          {item.item_type === TASK_GROUP_TYPES.STORY ? (
+            <View style={styles.storyContent}>
+              <Text
+                style={styles.storyItemText}
+                numberOfLines={3}
+              >
+                {item.description}
+              </Text>
+              <View style={styles.storyTagContainer}>
+                {item._objective && (
+                  <Text style={{ ...styles.storyTag, ...styles.objectiveTag }}>
+                    {`${item.objectiveValue || 0} ${item._objective.name.toUpperCase()}`}
+                  </Text>
+                )}
+                <Text style={{ ...styles.storyTag, ...styles.quotaTag }}>
+                  {`0/${item.quota || 0} ${item.refresh.toUpperCase()}`}
+                </Text>
+                {item.reward && (
+                  <Text style={{ ...styles.storyTag, ...styles.rewardTag }}>
+                    {`${item.reward.value || 0} ${item.reward.type.toUpperCase()}`}
+                  </Text>
+                )}
+              </View>
             </View>
-          </View>
+          ) : (
+              <View style={styles.storyContent}>
+                <Text
+                  style={styles.challengeItemTitle}
+                  numberOfLines={1}
+                >
+                  {item.name}
+                </Text>
+                <Text
+                  style={styles.challengeItemText}
+                  numberOfLines={4}
+                >
+                  {item.description}
+                </Text>
+                <View style={styles.storyTagContainer}>
+                  {item.type && (
+                    <Text style={{ ...styles.storyTag, ...styles.objectiveTag }}>
+                      {item.type.toUpperCase()}
+                    </Text>
+                  )}
+                  <Text style={{ ...styles.storyTag, ...styles.quotaTag }}>
+                    {`0/${item.quota || 0} ${item.refresh.toUpperCase()}`}
+                  </Text>
+                  {item.reward && (
+                    <Text style={{ ...styles.storyTag, ...styles.rewardTag }}>
+                      {`${item.rewardValue || 0} ${item.reward.toUpperCase()}`}
+                    </Text>
+                  )}
+                </View>
+              </View>
+            )}
         </View>
         <View style={styles.storyActionsContainer}>
           <TouchableOpacity onPress={() => {
-            this.setModalVisible(!this.state.modalVisible, item._id);
+            this.setModalVisible(!this.state.modalVisible, item._id, item.item_type);
           }}>
             <View style={{ ...styles.storyActionBlock, ...{ 'backgroundColor': '#ffc500' } }}>
               <Image
@@ -307,38 +169,14 @@ export default class StoryView extends Component {
             />
           </View>
         </View>
-      </View>
+      </View >
     );
   };
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      loading: true,
-      stories: [],
-      currentSlideIndex: 0,
-      modalVisible: false,
-      processing: false,
-      tasksFetching: false,
-      userTaskGroups: []
-    };
-  }
-
-  componentWillMount() {
-    this.getStories();
-  }
-
-  goToProfileScreen = () => {
-    this.props.navigation.navigate({ routeName: 'Profile' })
-  }
-
-  goToUserTasksScreen = () => {
-    this.props.navigation.navigate({ routeName: 'UserTaskGroup' })
-  }
-
-  setModalVisible(visible, itemId) {
+  setModalVisible(visible, itemId, itemType) {
     this.setState({ modalVisible: visible, tasksFetching: !!itemId, userTaskGroups: [] });
     selectedItemId = itemId;
+    selectedItemType = itemType
     if (itemId) {
       this.fetchUserTaskGroupsBasedOnStory(itemId);
     }
@@ -346,14 +184,20 @@ export default class StoryView extends Component {
 
   fetchUserTaskGroupsBasedOnStory(storyId) {
     let endpoint = USER_TASK_GROUP_LIST_PATH_API.replace('{page}', 1);
-    endpoint = endpoint.replace('{type}', 'Story');
+    endpoint = endpoint.replace('{type}', selectedItemType);
     endpoint = endpoint.concat('&page_size=', 3);
     endpoint = endpoint.concat('&type_id=', storyId);
+    endpoint = endpoint.concat('&user_email=', this.props.user.profile.email);
+    endpoint = endpoint.concat('&filter_user=', true);
     instance.get(endpoint).then(response => {
-      this.setState({
-        userTaskGroups: response.data.latestUserTaskGroups,
-        tasksFetching: false
-      })
+      if (response) {
+        response.data = getGroupUserDetails(response.data);
+        this.setState({
+          userTaskGroups: response.data.latestUserTaskGroups,
+          tasksFetching: false
+        })
+      }
+
     }).catch((error) => {
       this.setState({ tasksFetching: false });
     });
@@ -402,7 +246,7 @@ export default class StoryView extends Component {
 
   createNewUserTaskGroup(teamId) {
     let data = {
-      type: 'Story',
+      type: selectedItemType,
       _typeObject: selectedItemId,
       _user: this.props.user._id,
       _team: teamId
@@ -418,6 +262,7 @@ export default class StoryView extends Component {
       .then((responseData) => {
         this.setState({ processing: false, modalVisible: false });
         selectedItemId = null;
+        selectedItemType = null;
         this.props.navigation.navigate("UserTaskGroup", { reset: true })
       })
       .catch((error) => {
@@ -436,19 +281,52 @@ export default class StoryView extends Component {
       });
   }
 
+  getUserAchievements = async () => {
+    let { user } = this.props;
+    let response = await instance(USER_ACHIEVEMENT_LIST_PATH_API.replace(user._id));
+    this.getChallenges(user, response.data || [])
+  }
+
+  getChallenges(user, userAchievements) {
+    let { profile } = user;
+    if (profile) {
+      let data = {
+        emailId: profile.email,
+        achievementIds: this.getUserAchievementIds(userAchievements)
+      }
+      instance.post(STORY_CHALLENGES_LIST_API_PATH, data)
+        .then((response) => {
+          const challenges = response.data.map(challenge => {
+            return {
+              ...challenge,
+              item_type: TASK_GROUP_TYPES.CHALLENGE
+            }
+          })
+          this.setState({ challenges: challenges, challengesFetching: false });
+        })
+        .catch((error) => {
+          this.setState({ challengesFetching: false });
+        });
+    }
+  }
+
+  getUserAchievementIds(userAchievements) {
+    return userAchievements.filter(item => item.status === "Complete").map(item => item.achievementId);
+  }
+
   mapStoriesWithVideo(stories) {
     const results = stories.map(async story => {
       return fetch(STORY_HAS_VIDEO_API.replace('{}', story._id))
         .then((response) => response.json())
         .then((responseJson) => {
-          return { ...story, ...{ 'has_video': true } };
+          return { ...story, ...{ has_video: true, item_type: TASK_GROUP_TYPES.STORY } };
         })
         .catch((error) => {
-          return { ...story, ...{ 'has_video': false } };
+          return { ...story, ...{ has_video: false, item_type: TASK_GROUP_TYPES.STORY } };
         });
     });
     Promise.all(results).then((completed) => {
-      this.setState({ stories: completed, loading: false });
+      this.setState({ stories: completed, storiesFetching: false });
     });
   }
 
@@ -485,15 +363,12 @@ export default class StoryView extends Component {
             source={require('./../../assets/images/chat.png')}
             style={styles.headerIcon}
           />
-          <TouchableOpacity onPress={this.goToProfileScreen}>
-            <Image
-              source={require('./../../assets/images/menu.png')}
-              style={styles.headerIcon}
-            />
+          <TouchableOpacity onPress={this.goToDashboardScreen}>
+            <Icon name='bars' style={styles.headerFontIcon} />
           </TouchableOpacity>
         </View>
         <View style={styles.storyContainerView}>
-          {this.state.loading ? (
+          {this.state.storiesFetching || this.state.challengesFetching ? (
             <ActivityIndicator size="large" color="#800094" />
           ) : (
               <View>
@@ -501,7 +376,7 @@ export default class StoryView extends Component {
                   ref={(c) => {
                     this._carousel = c;
                   }}
-                  data={this.state.stories}
+                  data={[...this.state.stories, ...this.state.challenges]}
                   renderItem={this._renderItem}
                   sliderWidth={width}
                   itemWidth={wp('90%')}
@@ -511,41 +386,34 @@ export default class StoryView extends Component {
             )}
         </View>
         <View style={styles.footer}>
+          <TouchableOpacity onPress={this.goToProfileScreen}>
+            <View style={styles.footerTab}>
+              <Icon name='th' style={styles.footerTabIcon} />
+              <CustomText
+                styles={{ ...styles.footerTabText, ...{ 'marginRight': 0 } }}
+                font='open-sans'>
+                {'Dashboard'.toUpperCase()}
+              </CustomText>
+            </View>
+          </TouchableOpacity>
           <View style={styles.footerTab}>
-            <Image
-              source={require('./../../assets/images/dashboard.png')}
-              style={styles.footerTabIcon}
-            />
-            <CustomText loading={this.state.loading}
-              styles={{ ...styles.footerTabText, ...{ 'marginRight': 0 } }}
-              font='open-sans'>
-              {'Dashboard'.toUpperCase()}
-            </CustomText>
-          </View>
-          <View style={styles.footerTab}>
-            <Image
-              source={require('./../../assets/images/story.png')}
-              style={styles.footerTabIcon}
-            />
-            <CustomText loading={this.state.loading}
+            <Icon name='star' style={styles.footerTabIcon} />
+            <CustomText
               styles={{ ...styles.footerTabText, ...{ 'marginRight': 0 } }}
               font='open-sans'>
               {'Story'.toUpperCase()}
             </CustomText>
           </View>
-          <View style={styles.footerTab}>
-            <TouchableOpacity onPress={this.goToUserTasksScreen}>
-              <Image
-                source={require('./../../assets/images/task.png')}
-                style={styles.footerTabIcon}
-              />
-              <CustomText loading={this.state.loading}
+          <TouchableOpacity onPress={this.goToUserTasksScreen}>
+            <View style={styles.footerTab}>
+              <Icon name='tasks' style={styles.footerTabIcon} />
+              <CustomText
                 styles={{ ...styles.footerTabText, ...{ 'marginRight': 0 } }}
                 font='open-sans'>
-                {'Task'.toUpperCase()}
+                {'Groups'.toUpperCase()}
               </CustomText>
-            </TouchableOpacity>
-          </View>
+            </View>
+          </TouchableOpacity>
         </View>
         <Modal
           animationType="fade"

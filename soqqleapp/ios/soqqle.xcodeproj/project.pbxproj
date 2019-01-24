@@ -828,8 +828,8 @@
 				ORGANIZATIONNAME = Facebook;
 				TargetAttributes = {
 					13B07F861A680F5B00A75B9A = {
-						DevelopmentTeam = 8BZ53LM9H4;
-						ProvisioningStyle = Manual;
+						DevelopmentTeam = CCV4GW39XH;
+						ProvisioningStyle = Automatic;
 					};
 				};
 			};
@@ -1311,10 +1311,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = NO;
-				DEVELOPMENT_TEAM = 8BZ53LM9H4;
+				DEVELOPMENT_TEAM = CCV4GW39XH;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SRCROOT)/../../../Documents/FacebookSDK",
 					"$(inherited)",
@@ -1341,9 +1342,9 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.kkpl.creditKaro;
+				PRODUCT_BUNDLE_IDENTIFIER = com.Soqqle.SoqqleApp;
 				PRODUCT_NAME = soqqle;
-				PROVISIONING_PROFILE_SPECIFIER = CreditKaroDev_27Dec;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Debug;
@@ -1352,9 +1353,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 8BZ53LM9H4;
+				DEVELOPMENT_TEAM = CCV4GW39XH;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SRCROOT)/../../../Documents/FacebookSDK",
 					"$(inherited)",
@@ -1376,9 +1378,9 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.kkpl.creditKaro;
+				PRODUCT_BUNDLE_IDENTIFIER = com.Soqqle.SoqqleApp;
 				PRODUCT_NAME = soqqle;
-				PROVISIONING_PROFILE_SPECIFIER = CreditKaroDev_27Dec;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Release;

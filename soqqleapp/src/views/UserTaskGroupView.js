@@ -1,17 +1,12 @@
 import React, { Component } from 'react';
 import {
-    Button, Platform, StyleSheet, TouchableOpacity, ActivityIndicator,
-    Text, View, Dimensions, SafeAreaView, ScrollView, FlatList, TouchableWithoutFeedback
+    Platform, StyleSheet, TouchableWithoutFeedback,
+    Text, View, SafeAreaView, FlatList
 } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome'
-
-import { USER_TASK_GROUP_LIST_API } from './../endpoints';
-import { PAGE_SIZE, STORY_IMAGE_BASE_URL, STORY_VIDEO_BASE_URL } from './../constants';
-
+import Header from './../components/Header';
+import { PAGE_SIZE } from './../constants';
 
 const statusBarHeight = Platform.OS === 'ios' ? 0 : 0;
-var width = Dimensions.get('window').width; //full width
-var height = Dimensions.get('window').height; //full height
 
 const styles = StyleSheet.create({
     container: {
@@ -19,35 +14,6 @@ const styles = StyleSheet.create({
         paddingTop: statusBarHeight,
         backgroundColor: '#2C2649',
         flex: 1,
-    },
-    header: {
-        backgroundColor: '#130C38',
-        paddingHorizontal: 5,
-        paddingVertical: 15,
-        position: 'relative',
-        shadowColor: 'rgba(0, 0, 0, 0.3)',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.8,
-        shadowRadius: 2,
-        elevation: 5
-    },
-    headerText: {
-        color: '#ffffff',
-        fontSize: 20,
-        textAlign: 'center',
-    },
-    headerBackView: {
-        position: 'absolute',
-        paddingHorizontal: 10,
-        paddingVertical: 10,
-        top: '50%',
-        marginTop: -5,
-        left: 10,
-        zIndex: 3
-    },
-    headerBackIcon: {
-        color: '#FFFFFF',
-        fontSize: 20,
     },
     activityLoaderContainer: {
         flex: 1,
@@ -99,7 +65,8 @@ const styles = StyleSheet.create({
     },
     listLoader: {
         paddingVertical: 10,
-    }
+    },
+
 });
 
 let pageNum = 0;
@@ -118,7 +85,7 @@ export default class UserTaskGroupView extends Component {
             totalCount: null,
             refreshing: false
         }
-        userEmail = this.props.user.profile.email;
+        userEmail = this.props.user.profile && this.props.user.profile.email || null;
     }
 
     componentWillMount() {
@@ -131,9 +98,11 @@ export default class UserTaskGroupView extends Component {
             this.setState({ userTasks: response.taskGroups });
         }
         else {
-            this.props.userActions.getUserTaskGroupsRequest({
-                page: 1, load: true, user_email: userEmail
-            });
+            if (userEmail) {
+                this.props.userActions.getUserTaskGroupsRequest({
+                    page: 1, load: true, user_email: userEmail
+                });
+            }
         }
 
     }
@@ -162,12 +131,14 @@ export default class UserTaskGroupView extends Component {
     _renderItem = ({ item, index }) => {
         const data = item._typeObject;
         const teamLength = item._team.emails.length;
+        if (!data) return null;
         return (
             <View style={{ paddingHorizontal: 10 }}>
                 <TouchableWithoutFeedback
                     onPress={() => this.props.navigation.navigate("Chat",
                         {
-                            task_group_id: item._id
+                            task_group_id: item._id,
+                            taskUpdated: false
                         }
                     )}
                 >
@@ -185,21 +156,23 @@ export default class UserTaskGroupView extends Component {
                         </View>
                     </View>
                 </TouchableWithoutFeedback>
+
             </View>
         );
-    };
-
+    }
     handleBackAction() {
         this.props.navigation.navigate({ routeName: 'Story' })
     }
 
     handleRefresh() {
-        this.setState({ refreshing: true });
-        this.props.userActions.getUserTaskGroupsRequest({ page: 1, user_email: userEmail });
+        if (userEmail) {
+            this.setState({ refreshing: true });
+            this.props.userActions.getUserTaskGroupsRequest({ page: 1, user_email: userEmail });
+        }
     }
 
     handleScroll() {
-        if (pageNum * pageSize < totalCount && !this.state.loading) {
+        if (pageNum * pageSize < totalCount && !this.state.loading && userEmail) {
             this.setState({ loading: true });
             this.props.userActions.getUserTaskGroupsRequest({
                 page: pageNum + 1,
@@ -212,20 +185,7 @@ export default class UserTaskGroupView extends Component {
     render() {
         return (
             <SafeAreaView style={styles.container}>
-                <View style={styles.header}>
-                    <TouchableOpacity
-                        onPress={() => this.handleBackAction()}
-                        style={styles.headerBackView}>
-
-                        <View>
-                            <Icon
-                                name='chevron-left'
-                                style={styles.headerBackIcon}
-                            />
-                        </View>
-                    </TouchableOpacity>
-                    <Text style={styles.headerText}>Groups</Text>
-                </View>
+                <Header title='Groups' navigation={this.props.navigation} />
                 <View style={{ flex: 1, marginTop: 5 }}>
                     <FlatList
                         data={this.state.userTasks}

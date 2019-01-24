@@ -7,10 +7,9 @@ import UserTaskGroupView from '../views/UserTaskGroupView';
 
 export default connect(
     state => ({
-        isReady: state.getIn(['session', 'isReady']),
-        user: state.getIn(['user', 'user']),
-        error: state.getIn(['user', 'error']),
+        user: isImmutable(state.getIn(['user', 'user'])) ? state.getIn(['user', 'user']).toJS() : state.getIn(['user', 'user']),
         taskGroups: isImmutable(state.getIn(['user', 'task_groups'])) ? state.getIn(['user', 'task_groups']).toJS() : state.getIn(['user', 'task_groups']),
+        error: state.getIn(['user', 'error']),
         userTaskGroupsSuccess: state.getIn(['user', 'getUserTaskGroups']),
     }),
     dispatch => {

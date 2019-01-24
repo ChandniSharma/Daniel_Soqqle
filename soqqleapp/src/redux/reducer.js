@@ -1,17 +1,23 @@
-import {Map, fromJS} from 'immutable';
-import {loop, combineReducers} from 'redux-loop-symbol-ponyfill';
+import { Map, fromJS } from 'immutable';
+import { loop, combineReducers } from 'redux-loop-symbol-ponyfill';
 import NavigatorStateReducer from '../navigator/NavigatorState';
 import UserReducer from '../reducers/UserReducer';
 import CompanyReducer from '../reducers/CompanyReducer';
+import AchievementReducer from '../reducers/AchievementReducer';
+import SparkReducer from '../reducers/SparkReducer';
 import AppReducer from '../reducers/AppReducer';
-import SessionStateReducer, {RESET_STATE} from '../session/SessionState';
+import SessionStateReducer, { RESET_STATE } from '../session/SessionState';
+import TaskReducer from "../reducers/TaskReducer";
 
 const reducers = {
   user: UserReducer,
   company: CompanyReducer,
+  achievement: AchievementReducer,
+  spark: SparkReducer,
   app: AppReducer,
+  task: TaskReducer,
   navigatorState: NavigatorStateReducer,
-  session: SessionStateReducer
+  session: SessionStateReducer,
 };
 const immutableStateContainer = Map();
 const getImmutable = (child, key) => child ? child.get(key) : void 0;

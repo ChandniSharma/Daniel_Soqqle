@@ -1,18 +1,16 @@
 import React, { Component } from 'react';
 import {
-    Button, Platform, StyleSheet, TouchableOpacity, ActivityIndicator,
-    Text, View, Dimensions, SafeAreaView, ScrollView
+    Platform, StyleSheet, ActivityIndicator,
+    Text, View, SafeAreaView, ScrollView
 } from 'react-native';
 import Accordion from 'react-native-collapsible/Accordion';
-import Icon from 'react-native-vector-icons/FontAwesome'
-
+import Icon from 'react-native-vector-icons/FontAwesome';
+import Header from './../components/Header';
 import { AGENDA_LIST_API } from './../endpoints';
 import { PAGE_SIZE } from './../constants';
 
 
 const statusBarHeight = Platform.OS === 'ios' ? 0 : 20;
-var width = Dimensions.get('window').width; //full width
-var height = Dimensions.get('window').height; //full height
 
 const styles = StyleSheet.create({
     container: {
@@ -20,30 +18,6 @@ const styles = StyleSheet.create({
         paddingTop: statusBarHeight,
         backgroundColor: '#ffffff',
         flex: 1,
-    },
-    header: {
-        backgroundColor: '#1FBEB8',
-        paddingHorizontal: 5,
-        paddingVertical: 15,
-        position: 'relative',
-    },
-    headerText: {
-        color: '#ffffff',
-        fontSize: 20,
-        textAlign: 'center',
-    },
-    headerBackView: {
-        position: 'absolute',
-        paddingHorizontal: 10,
-        paddingVertical: 10,
-        top: '50%',
-        marginTop: -5,
-        left: 10,
-        zIndex: 3
-    },
-    headerBackIcon: {
-        color: '#FFFFFF',
-        fontSize: 20,
     },
     activityLoaderContainer: {
         flex: 1,
@@ -246,20 +220,13 @@ export default class AgendaView extends Component {
     render() {
         return (
             <SafeAreaView style={styles.container}>
-                <View style={styles.header}>
-                    <TouchableOpacity
-                        onPress={() => this.handleBackAction()}
-                        style={styles.headerBackView}>
-
-                        <View>
-                            <Icon
-                                name='chevron-left'
-                                style={styles.headerBackIcon}
-                            />
-                        </View>
-                    </TouchableOpacity>
-                    <Text style={styles.headerText}>Group Tasks</Text>
-                </View>
+                <Header
+                    title='Group Tasks'
+                    navigation={this.props.navigation}
+                    headerStyle={{
+                        backgroundColor: '#1FBEB8'
+                    }}
+                />
                 {this.state.initialLoading ? (
                     <View style={styles.activityLoaderContainer}>
                         <ActivityIndicator size="large" color="#0000ff" />
